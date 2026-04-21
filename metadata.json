@@ -1,0 +1,9 @@
+{
+  "name": "DriveLogicAI - Vehicle Telemetry \u0026 Diagnostics",
+  "description": "A comprehensive vehicle health and trip monitoring system featuring real-time OBD diagnostics, driving behavior analysis, and AI-powered route optimization. The focus of this app is to log sensor data and OBD2 codes for diagnosis by gemini.",
+  "requestFramePermissions": [
+    "geolocation",
+    "bluetooth",
+    "microphone"
+  ]
+}
