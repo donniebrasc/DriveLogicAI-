@@ -4,6 +4,11 @@ def keystorePropertiesFile = rootProject.file("app/key.properties")
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    def required = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+    def missing = required.findAll { !keystoreProperties[it] }
+    if (!missing.isEmpty()) {
+        throw new GradleException("key.properties is missing required entries: ${missing.join(', ')}")
+    }
 }
 
 android {

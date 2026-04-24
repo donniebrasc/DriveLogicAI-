@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build & sign AAB
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -38,6 +40,7 @@ jobs:
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.jks
+          chmod 600 android/app/release.jks
 
       - name: Write key.properties
         run: |
