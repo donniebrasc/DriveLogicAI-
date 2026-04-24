@@ -2,11 +2,11 @@
 # NEVER commit key.properties to source control.
 #
 # Generate a keystore with:
-#   keytool -genkeypair -v -keystore release.jks -alias drivelogic \
+#   keytool -genkeypair -v -keystore release.jks -alias drivelogicai \
 #     -keyalg RSA -keysize 2048 -validity 10000
 #
 # storeFile: absolute or relative path to the .jks/.keystore file
 storeFile=/path/to/release.jks
 storePassword=your_store_password
-keyAlias=drivelogic
+keyAlias=drivelogicai
 keyPassword=your_key_password

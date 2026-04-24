@@ -1,4 +1,4 @@
-package com.example.cardiagnostics;
+package com.DriveLogicAI;
 
 import com.getcapacitor.BridgeActivity;
 
