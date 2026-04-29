@@ -56,7 +56,9 @@ export default function OBDTab({ data, isSimulation, connectionStatus, onConnect
       await onConnectReal();
       setConnectionError(null);
     } catch (err) {
-      setConnectionError(err instanceof Error ? err.message : 'Failed to connect');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to connect';
+      setConnectionError(errorMessage);
+      alert(`Bluetooth Pairing Error:\n${errorMessage}`);
     }
   };
 

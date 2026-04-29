@@ -1,21 +1,10 @@
 apply plugin: 'com.android.application'
 
-def keystorePropertiesFile = rootProject.file("app/key.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-    def required = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
-    def missing = required.findAll { !keystoreProperties[it] }
-    if (!missing.isEmpty()) {
-        throw new GradleException("key.properties is missing required entries: ${missing.join(', ')}")
-    }
-}
-
 android {
-    namespace = "com.DriveLogicAI"
+    namespace = "com.example.cardiagnostics"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.DriveLogicAI"
+        applicationId "com.drivelogic.telemetry"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -27,19 +16,10 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    signingConfigs {
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
-        }
-    }
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }

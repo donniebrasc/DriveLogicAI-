@@ -17,8 +17,9 @@ import MusicPlayer, { MusicPlayerHandle } from './components/MusicPlayer';
 import MaintenanceTab from './components/MaintenanceTab';
 import { runAIDiagnosis } from './services/geminiService';
 import { MaintenanceTask } from './types';
+import { useJsApiLoader } from '@react-google-maps/api';
 
-const DEFAULT_MAPS_KEY = "";
+const DEFAULT_MAPS_KEY = "AIzaSyDX-VRPvfH-AzKUwmtu1DQ9_vzDn4y2f9E";
 
 export default function App() {
   const musicPlayerRef = useRef<MusicPlayerHandle>(null);
@@ -61,7 +62,7 @@ export default function App() {
   const [sensorHistory, setSensorHistory] = useState<SensorPoint[]>([]);
   const [apiKeys, setApiKeys] = useState({
     gemini: localStorage.getItem('ztcd_gemini_api_key') || process.env.GEMINI_API_KEY || '',
-    maps: localStorage.getItem('ztcd_maps_api_key') || import.meta.env.VITE_MAPS_API_KEY || DEFAULT_MAPS_KEY,
+    maps: localStorage.getItem('ztcd_maps_api_key') || DEFAULT_MAPS_KEY || import.meta.env.VITE_MAPS_API_KEY,
   });
   const [isSimulation, setIsSimulation] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
@@ -93,6 +94,11 @@ export default function App() {
         lastCompletedDate: Date.now() - 1000 * 60 * 60 * 24 * 60, // 2 months ago
       }
     ];
+  });
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: apiKeys.maps
   });
 
   // Simulation logic
@@ -287,12 +293,7 @@ export default function App() {
 
       // Broaden discovery to avoid "User cancelled" due to device not appearing in filtered list
       const device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { namePrefix: 'OBD' },
-          { namePrefix: 'V-LINK' },
-          { namePrefix: 'ELM' },
-          { namePrefix: 'IOS-Vlink' }
-        ],
+        acceptAllDevices: true,
         optionalServices: [
           '0000fff0-0000-1000-8000-00805f9b34fb', 
           '0000ffe0-0000-1000-8000-00805f9b34fb',
@@ -614,7 +615,7 @@ export default function App() {
   };
 
   const saveApiKeys = () => {
-    const previousMapsKey = localStorage.getItem('ztcd_maps_api_key') || import.meta.env.VITE_MAPS_API_KEY || DEFAULT_MAPS_KEY;
+    const previousMapsKey = localStorage.getItem('ztcd_maps_api_key') || DEFAULT_MAPS_KEY || import.meta.env.VITE_MAPS_API_KEY;
     const isMapsKeyChanged = previousMapsKey !== apiKeys.maps;
 
     localStorage.setItem('ztcd_gemini_api_key', apiKeys.gemini);
@@ -744,6 +745,7 @@ export default function App() {
                 trips={trips} 
                 isRecording={isRecording}
                 mapsApiKey={apiKeys.maps}
+                isLoaded={isLoaded}
                 onUpdateTrip={(updatedTrip) => {
                   setTrips(prev => prev.map(t => t.id === updatedTrip.id ? updatedTrip : t));
                 }}
@@ -756,6 +758,7 @@ export default function App() {
                 navigation={navigation}
                 setNavigation={setNavigation}
                 mapsApiKey={apiKeys.maps}
+                isLoaded={isLoaded}
               />
             )}
             {activeTab === 'maintenance' && (
@@ -776,7 +779,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <FloatingMap navigation={navigation} setNavigation={setNavigation} mapsApiKey={apiKeys.maps} />
+      <FloatingMap navigation={navigation} setNavigation={setNavigation} mapsApiKey={apiKeys.maps} isLoaded={isLoaded} />
 
       <MusicPlayer ref={musicPlayerRef} />
 
@@ -897,12 +900,24 @@ export default function App() {
                 </div>
               </div>
 
-              <button 
-                onClick={saveApiKeys}
-                className="w-full py-3 bg-car-accent text-white rounded-xl font-bold text-sm hover:bg-car-accent/80 transition-all"
-              >
-                SAVE CONFIGURATION
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('ztcd_maps_api_key');
+                    localStorage.removeItem('ztcd_gemini_api_key');
+                    window.location.reload();
+                  }}
+                  className="w-1/3 py-3 bg-white/5 border border-white/10 text-white/60 rounded-xl font-bold text-[10px] uppercase hover:bg-white/10 hover:text-white transition-all"
+                >
+                  Reset Keys
+                </button>
+                <button 
+                  onClick={saveApiKeys}
+                  className="w-2/3 py-3 bg-car-accent text-white rounded-xl font-bold text-sm hover:bg-car-accent/80 transition-all"
+                >
+                  SAVE CONFIGURATION
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

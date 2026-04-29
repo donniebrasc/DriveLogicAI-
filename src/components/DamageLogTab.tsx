@@ -4,7 +4,7 @@ import { DamagePoint, Trip, SensorPoint } from '../types';
 import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, Tooltip, AreaChart, Area } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { GoogleMap, useJsApiLoader, Polyline, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, Polyline, Marker, InfoWindow } from '@react-google-maps/api';
 
 interface DamageLogTabProps {
   score: number;
@@ -13,6 +13,7 @@ interface DamageLogTabProps {
   trips: Trip[];
   isRecording: boolean;
   mapsApiKey: string;
+  isLoaded: boolean;
   onUpdateTrip: (trip: Trip) => void;
 }
 
@@ -44,16 +45,11 @@ const darkMapStyles = [
 ];
 
 
-export default function DamageLogTab({ score, history, sensorHistory, trips, isRecording, mapsApiKey, onUpdateTrip }: DamageLogTabProps) {
+export default function DamageLogTab({ score, history, sensorHistory, trips, isRecording, mapsApiKey, isLoaded, onUpdateTrip }: DamageLogTabProps) {
   const [expandedTripId, setExpandedTripId] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<{ type: string, timestamp: number, lat: number, lng: number } | null>(null);
   const [newMarkerPos, setNewMarkerPos] = useState<{ lat: number, lng: number } | null>(null);
   const [markerNote, setMarkerNote] = useState('');
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: mapsApiKey
-  });
 
   React.useEffect(() => {
     setSelectedEvent(null);

@@ -4,7 +4,7 @@ import { Trip, NavigationState } from '../types';
 import { getRouteRecommendation } from '../services/geminiService';
 import { motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { GoogleMap, useJsApiLoader, Marker, TrafficLayer } from '@react-google-maps/api';
+import { GoogleMap, Marker, TrafficLayer } from '@react-google-maps/api';
 import { cn } from '../lib/utils';
 
 interface GPSTabProps {
@@ -13,6 +13,7 @@ interface GPSTabProps {
   navigation: NavigationState;
   setNavigation: (nav: NavigationState) => void;
   mapsApiKey: string;
+  isLoaded: boolean;
 }
 
 const mapContainerStyle = {
@@ -109,7 +110,7 @@ const MOCK_SPEED_TRAPS = [
 ];
 
 
-export default function GPSTab({ isRecording, trips, navigation, setNavigation, mapsApiKey }: GPSTabProps) {
+export default function GPSTab({ isRecording, trips, navigation, setNavigation, mapsApiKey, isLoaded }: GPSTabProps) {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -220,7 +221,9 @@ export default function GPSTab({ isRecording, trips, navigation, setNavigation, 
     };
     
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
+      if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        console.error('Speech recognition error', event.error);
+      }
       if (event.error === 'not-allowed') {
         setIsWakeWordActive(false);
         setIsListening(false);
@@ -259,11 +262,6 @@ export default function GPSTab({ isRecording, trips, navigation, setNavigation, 
       }
     };
   }, []);
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: mapsApiKey
-  });
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -411,22 +409,7 @@ export default function GPSTab({ isRecording, trips, navigation, setNavigation, 
 
       {/* Map View */}
       <div className="relative h-96 rounded-3xl overflow-hidden glass-card border-white/5 flex flex-col scanline-overlay">
-        {loadError ? (
-          <div className="absolute inset-0 bg-[#1e1e1e] flex items-center justify-center p-6 text-center z-20">
-            <div className="p-6 bg-car-danger/10 border border-car-danger/30 rounded-2xl max-w-md backdrop-blur-md">
-              <AlertCircle className="text-car-danger mx-auto mb-4" size={32} />
-              <h3 className="text-white font-bold mb-2">Google Maps API Error</h3>
-              <p className="text-white/60 text-sm mb-4">
-                The provided API key is blocked or missing required API privileges.
-              </p>
-              <div className="text-left bg-black/40 p-3 rounded-lg text-[10px] font-mono text-white/40 mb-4">
-                <p>1. Open Google Cloud Console</p>
-                <p>2. Enable: Maps JavaScript API, Places API, Directions API, Geocoding API</p>
-                <p>3. Check API restrictions allow this domain</p>
-              </div>
-            </div>
-          </div>
-        ) : isLoaded && mapsApiKey ? (
+        {isLoaded && mapsApiKey ? (
           <>
             {/* Search Bar Overlay */}
             <div className="absolute top-4 left-4 right-16 z-10">

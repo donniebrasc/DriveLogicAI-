@@ -3,12 +3,13 @@ import { MapPin, Navigation, X, Minimize2, Search, ArrowRight, Key, AlertCircle 
 import { motion, AnimatePresence } from 'motion/react';
 import { NavigationState } from '../types';
 import { cn } from '../lib/utils';
-import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer, TrafficLayer } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer, TrafficLayer } from '@react-google-maps/api';
 
 interface FloatingMapProps {
   navigation: NavigationState;
   setNavigation: (nav: NavigationState) => void;
   mapsApiKey: string;
+  isLoaded: boolean;
 }
 
 const mapContainerStyle = {
@@ -98,7 +99,7 @@ const darkMapStyles = [
 ];
 
 
-export default function FloatingMap({ navigation, setNavigation, mapsApiKey }: FloatingMapProps) {
+export default function FloatingMap({ navigation, setNavigation, mapsApiKey, isLoaded }: FloatingMapProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMini, setIsMini] = useState(false);
   const [size, setSize] = useState({ width: 320, height: 384 }); // Default 80x96 (w-80 h-96)
@@ -138,10 +139,7 @@ export default function FloatingMap({ navigation, setNavigation, mapsApiKey }: F
     window.addEventListener('touchend', stopResize);
   }, [handleResize, stopResize]);
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: mapsApiKey
-  });
+  // Assume isLoaded is passed as a prop from App.tsx or we rely on a global context. For now, since App.tsx loads it, window.google.maps should be available if we give it a moment, but passing it is better. Wait, we need to add isLoaded prop.
 
   useEffect(() => {
     let watchId: number;
@@ -214,8 +212,6 @@ export default function FloatingMap({ navigation, setNavigation, mapsApiKey }: F
 
     return () => clearInterval(intervalId);
   }, [isLoaded, navigation.from, navigation.to, navigation.waypoints, location]);
-
-  if (!navigation.isActive) return null;
 
   const handleStart = () => {
     setNavigation({ ...navigation, from: fromInput, to: toInput });
@@ -312,13 +308,7 @@ export default function FloatingMap({ navigation, setNavigation, mapsApiKey }: F
 
           {/* Map View */}
           <div className="flex-1 relative bg-[#151619] overflow-hidden">
-            {loadError ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/80">
-                <AlertCircle className="text-car-danger mb-2" size={24} />
-                <p className="text-[10px] text-white">Maps API Blocked</p>
-                <p className="text-[8px] text-white/60 mt-1">Check GCP Console<br/>API Restrictions</p>
-              </div>
-            ) : isLoaded && mapsApiKey ? (
+            {isLoaded && mapsApiKey ? (
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={location || { lat: 37.7749, lng: -122.4194 }}
